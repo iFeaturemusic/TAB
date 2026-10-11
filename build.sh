@@ -11,7 +11,7 @@ if ! xcrun --sdk macosx --show-sdk-path >/dev/null 2>&1 && [ -d /Applications/Xc
 fi
 SDK="$(xcrun --sdk macosx --show-sdk-path)"
 
-echo "Building $APP…"
+echo "Building ${APP}..."
 rm -rf "$BUNDLE"
 mkdir -p "$BUNDLE/Contents/MacOS" "$BUNDLE/Contents/Resources"
 cp Resources/Info.plist "$BUNDLE/Contents/"
