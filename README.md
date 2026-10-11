@@ -177,12 +177,6 @@ Left click opens TAB. Right click gives you a quick menu to start a break, log w
 
 ## Install
 
-### Download
-
-Get the ready-to-use app at **[gettab.app](https://gettab.app)**.
-
-### Build it yourself
-
 You need macOS 13 Ventura or newer and Xcode (or the Xcode Command Line Tools).
 
 ```bash
@@ -228,6 +222,6 @@ build.sh                build, sign and install
 ---
 
 <p align="center">
-  Made by <b>iFeature</b> · <a href="https://gettab.app">gettab.app</a><br>
+  Made by <b>iFeature</b><br>
   <sub>© 2026 iFeature</sub>
 </p>
