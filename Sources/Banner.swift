@@ -5,12 +5,13 @@ import SwiftUI
 struct BannerView: View {
     @EnvironmentObject var engine: Engine
     @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var mind: Mind
     var nudge: Nudge
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
-                MascotView(mood: nudge == .welcomeBack ? .happy : .alert, size: 42)
+                MascotView(mood: mood, size: 42)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(NudgeCopy.title(nudge, engine: engine))
                         .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -39,12 +40,22 @@ struct BannerView: View {
         .environment(\.colorScheme, .dark)
     }
 
+    private var mood: Mood {
+        switch nudge {
+        case .welcomeBack: return .happy
+        case .mindPractice: return .sleepy
+        default: return .alert
+        }
+    }
+
     private var accent: Color {
         switch nudge {
         case .breakTime, .welcomeBack: return Theme.rest
         case .lockSoon: return Theme.alert
         case .stand: return Theme.move
         case .water: return Theme.water
+        case .mindPractice: return Theme.mind
+        case .socialLimit, .scrolling: return Theme.digital
         }
     }
 }
@@ -52,14 +63,16 @@ struct BannerView: View {
 final class BannerController {
     private let engine: Engine
     private let prefs: Preferences
+    private let mind: Mind
     private let anchor: () -> NSRect?
     private var panel: FloatingPanel?
     private var bag = Set<AnyCancellable>()
     private var panelOpen = false
 
-    init(engine: Engine, prefs: Preferences, anchor: @escaping () -> NSRect?, panelVisibility: AnyPublisher<Bool, Never>) {
+    init(engine: Engine, prefs: Preferences, mind: Mind, anchor: @escaping () -> NSRect?, panelVisibility: AnyPublisher<Bool, Never>) {
         self.engine = engine
         self.prefs = prefs
+        self.mind = mind
         self.anchor = anchor
 
         engine.$nudge
@@ -80,6 +93,7 @@ final class BannerController {
         let view = BannerView(nudge: nudge)
             .environmentObject(engine)
             .environmentObject(prefs)
+            .environmentObject(mind)
         let host = FirstMouseHostingView(rootView: view)
         let size = host.fittingSize
         let panel = self.panel ?? FloatingPanel(size: size, focusable: false)

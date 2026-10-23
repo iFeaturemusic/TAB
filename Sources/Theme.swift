@@ -25,6 +25,9 @@ enum Theme {
     static let rest = Color(hex: 0x7EE2B0)
     static let move = Color(hex: 0xFFB672)
     static let score = Color(hex: 0xC7A6FF)
+    static let mind = Color(hex: 0xF4A8CF)
+    static let breath = Color(hex: 0x6FE3D4)
+    static let digital = Color(hex: 0xFFD56B)
     static let alert = Color(hex: 0xFF6B6B)
 }
 
@@ -74,6 +77,11 @@ enum Fmt {
         f.timeStyle = .short
         f.dateStyle = .none
         return f.string(from: date)
+    }
+
+    static func timeOfDay(_ minutes: Int) -> String {
+        let date = Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date()) ?? Date()
+        return time(date)
     }
 
     static func scoreLabel(_ score: Int?) -> String {
@@ -353,6 +361,93 @@ struct Chip: View {
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
+    }
+}
+
+struct RemovableChip: View {
+    var title: String
+    var onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .lineLimit(1)
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 7, weight: .heavy))
+                    .foregroundColor(Theme.dim)
+                    .frame(width: 14, height: 14)
+                    .background(Circle().fill(Color.white.opacity(0.08)))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.leading, 9)
+        .padding(.trailing, 4)
+        .frame(height: 22)
+        .background(Capsule().fill(Color.white.opacity(0.07)))
+    }
+}
+
+struct AddChip: View {
+    var title: String
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: "plus")
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(Theme.digital)
+                .padding(.horizontal, 9)
+                .frame(height: 22)
+                .background(Capsule().strokeBorder(Theme.digital.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [3, 2])))
+                .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 6
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 300
+        let rows = arrange(width: width, subviews: subviews)
+        let height = rows.last.map { $0.y + $0.height } ?? 0
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let rows = arrange(width: bounds.width, subviews: subviews)
+        for row in rows {
+            for (index, x) in row.items {
+                subviews[index].place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + row.y), proposal: .unspecified)
+            }
+        }
+    }
+
+    private func arrange(width: CGFloat, subviews: Subviews) -> [(y: CGFloat, height: CGFloat, items: [(Int, CGFloat)])] {
+        var rows: [(y: CGFloat, height: CGFloat, items: [(Int, CGFloat)])] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var height: CGFloat = 0
+        var items: [(Int, CGFloat)] = []
+        for (index, view) in subviews.enumerated() {
+            let size = view.sizeThatFits(.unspecified)
+            if x > 0 && x + size.width > width {
+                rows.append((y, height, items))
+                y += height + spacing
+                x = 0
+                height = 0
+                items = []
+            }
+            items.append((index, x))
+            x += size.width + spacing
+            height = max(height, size.height)
+        }
+        if !items.isEmpty { rows.append((y, height, items)) }
+        return rows
     }
 }
 

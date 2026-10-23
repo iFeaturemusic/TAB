@@ -2,41 +2,53 @@ import SwiftUI
 
 enum PanelTab: String, CaseIterable {
     case today = "Today"
+    case mind = "Mind"
     case insights = "Insights"
     case settings = "Settings"
 
     var symbol: String {
         switch self {
         case .today: return "sun.max.fill"
+        case .mind: return "leaf.fill"
         case .insights: return "chart.bar.fill"
         case .settings: return "slider.horizontal.3"
         }
     }
 }
 
+final class PanelNav: ObservableObject {
+    @Published var tab: PanelTab
+
+    init(_ tab: PanelTab = .today) {
+        self.tab = tab
+    }
+}
+
 struct RootView: View {
     @EnvironmentObject var engine: Engine
-    @State private var tab: PanelTab
+    @StateObject private var nav: PanelNav
 
     static let size = CGSize(width: 340, height: 580)
 
     init(tab: PanelTab = .today) {
-        _tab = State(initialValue: tab)
+        _nav = StateObject(wrappedValue: PanelNav(tab))
     }
 
     var body: some View {
         VStack(spacing: 0) {
             HeaderBar()
             ZStack {
-                switch tab {
+                switch nav.tab {
                 case .today: TodayView()
+                case .mind: MindView()
                 case .insights: InsightsView()
                 case .settings: SettingsView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            TabBar(selection: $tab)
+            TabBar(selection: $nav.tab)
         }
+        .environmentObject(nav)
         .frame(width: Self.size.width, height: Self.size.height)
         .background(
             ZStack {
@@ -52,6 +64,7 @@ struct RootView: View {
 
 struct HeaderBar: View {
     @EnvironmentObject var engine: Engine
+    @EnvironmentObject var mind: Mind
 
     var body: some View {
         HStack(spacing: 10) {
@@ -90,12 +103,15 @@ struct HeaderBar: View {
     }
 
     private var status: String {
+        if let session = mind.session { return "\(session.kind.title) · \(Fmt.clock(mind.remaining)) left" }
         switch engine.phase {
         case .focus:
             switch engine.nudge {
             case .breakTime: return "Break time"
             case .stand: return "Time to stand up"
             case .water: return "Time for water"
+            case .mindPractice: return "Time for your daily reset"
+            case .socialLimit, .scrolling: return "Social media check"
             default: return "Focusing · sitting \(Fmt.duration(engine.sittingFor))"
             }
         case .onBreak: return engine.breakComplete ? "Break complete" : "On a break"
@@ -124,9 +140,9 @@ struct TabBar: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.18)) { selection = tab }
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: tab.symbol).font(.system(size: 11, weight: .semibold))
-                        Text(tab.rawValue).font(.system(size: 12, weight: .semibold, design: .rounded))
+                    HStack(spacing: 5) {
+                        Image(systemName: tab.symbol).font(.system(size: 10, weight: .semibold))
+                        Text(tab.rawValue).font(.system(size: 11.5, weight: .semibold, design: .rounded)).lineLimit(1)
                     }
                     .foregroundColor(selection == tab ? .white : Theme.dim)
                     .frame(maxWidth: .infinity)

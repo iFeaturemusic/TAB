@@ -5,6 +5,7 @@ import SwiftUI
 struct LockScreenView: View {
     @EnvironmentObject var engine: Engine
     @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var mind: Mind
 
     var body: some View {
         let done = engine.breakComplete
@@ -50,6 +51,21 @@ struct LockScreenView: View {
                     }
                     .buttonStyle(PillButtonStyle(filled: true, tint: Theme.rest, height: 48))
                     .frame(width: 220)
+                } else if let session = mind.session, session.kind == .breathing {
+                    HStack(spacing: 18) {
+                        BreathingGuide(start: session.start, size: 84)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(mind.cue)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            Text("Physiological sigh · \(Fmt.clock(mind.remaining)) left")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.dim)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .card(padding: 14, radius: 20)
+                    .frame(width: 420)
                 } else {
                     StretchCard(stretch: engine.stretch)
                         .frame(width: 420)
@@ -61,6 +77,9 @@ struct LockScreenView: View {
                     }
                     CheckChip(title: "I stretched", symbol: "figure.flexibility", tint: Theme.move, done: engine.stretchedThisBreak) {
                         engine.logStand()
+                    }
+                    CheckChip(title: "Breathe", symbol: "wind", tint: Theme.breath, done: engine.breathedThisBreak) {
+                        mind.begin(.breathing, minutes: 1, inline: true)
                     }
                 }
             }
@@ -154,6 +173,8 @@ struct HoldToSkip: View {
 }
 
 final class LockWindow: NSWindow {
+    var onEscape: (() -> Void)?
+
     init(screen: NSScreen) {
         super.init(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered, defer: false)
         setFrame(screen.frame, display: true)
@@ -167,19 +188,23 @@ final class LockWindow: NSWindow {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
-    override func keyDown(with event: NSEvent) {}
+    override func keyDown(with event: NSEvent) {
+        if event.keyCode == 53 { onEscape?() }
+    }
     override func keyUp(with event: NSEvent) {}
 }
 
 final class LockScreenController {
     private let engine: Engine
     private let prefs: Preferences
+    private let mind: Mind
     private var windows: [LockWindow] = []
     private var bag = Set<AnyCancellable>()
 
-    init(engine: Engine, prefs: Preferences) {
+    init(engine: Engine, prefs: Preferences, mind: Mind) {
         self.engine = engine
         self.prefs = prefs
+        self.mind = mind
 
         engine.$isScreenLocked
             .removeDuplicates()
@@ -215,7 +240,8 @@ final class LockScreenController {
             let window = LockWindow(screen: screen)
             window.contentView = FirstMouseHostingView(rootView: LockScreenView()
                 .environmentObject(engine)
-                .environmentObject(prefs))
+                .environmentObject(prefs)
+                .environmentObject(mind))
             window.alphaValue = 0
             window.makeKeyAndOrderFront(nil)
             NSAnimationContext.runAnimationGroup { ctx in

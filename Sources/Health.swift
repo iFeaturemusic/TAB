@@ -86,19 +86,16 @@ enum AgeGroup: String, CaseIterable, Identifiable {
     }
 }
 
-enum Tips {
-    static let all = [
-        "Walking beats standing. 5 min of light walking every 30 min lowered blood sugar in a 2023 Columbia study.",
-        "Across \(Research.studies.count) studies, the average advice was to get up every \(Int(Research.averageInterval.rounded())) minutes.",
-        "Every 20 min, look at something 20 feet away for 20 seconds. Your eyes will thank you.",
-        "Even 2 minutes count. Short walks every 20 min helped in a 2012 study.",
-        "In a study of 7,985 adults, people who sat less than 30 min at a time had the lowest risk.",
-    ]
+enum MindResearch {
+    static let nsdr = "One 10 min NSDR session lowered fatigue, stress and heart rate in a 2026 trial. Daily Yoga Nidra improved sleep and stress over a month."
+    static let meditation = "Regular meditation is linked to lower cortisol, and long-term meditators show a thicker prefrontal cortex."
+    static let sigh = "5 min a day of cyclic sighing lifted mood and slowed resting breathing more than meditation in a month-long study."
+    static let digital = "Keeping social media to about 30 min a day eased loneliness and low mood. Checking notifications in batches improved focus and lowered stress, more than turning them off completely."
 
-    static var today: String {
-        let day = Calendar.current.ordinality(of: .day, in: .year, for: Date()) ?? 0
-        return all[day % all.count]
-    }
+    static let notes = [
+        "Sources: Boukhris 2026, Moszeik 2022, Pascoe 2017, Lazar 2005, Balban 2023, Hunt 2018, Fitz 2019.",
+        "TAB is not a medical app. If a breathing exercise makes you dizzy, stop and breathe normally.",
+    ]
 }
 
 struct Stretch: Equatable {

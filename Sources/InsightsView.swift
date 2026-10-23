@@ -105,9 +105,18 @@ struct MetricPicker: View {
     var allowScore: Bool
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(Metric.allCases.filter { allowScore || $0 != .score }, id: \.self) { m in
-                Chip(title: m.rawValue, selected: m == metric, tint: m.color) { metric = m }
+        let metrics = Metric.allCases.filter { allowScore || $0 != .score }
+        let split = (metrics.count + 1) / 2
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                ForEach(metrics.prefix(split), id: \.self) { m in
+                    Chip(title: m.rawValue, selected: m == metric, tint: m.color) { metric = m }
+                }
+            }
+            HStack(spacing: 4) {
+                ForEach(metrics.suffix(from: split), id: \.self) { m in
+                    Chip(title: m.rawValue, selected: m == metric, tint: m.color) { metric = m }
+                }
             }
         }
     }
@@ -227,6 +236,8 @@ struct TrendChart: View {
             value = Fmt.water(Int(ml), ounces: ounces)
         case .breaks: value = "\(Fmt.number(p.value)) breaks"
         case .moves: value = "\(Fmt.number(p.value)) stand-ups"
+        case .mind: value = "\(Fmt.duration(Int(p.value * 60))) of rest"
+        case .social: value = "\(Fmt.duration(Int(p.value * 60))) of social media"
         case .score: value = "score \(Int(p.value))"
         }
         return "\(when) · \(value)"

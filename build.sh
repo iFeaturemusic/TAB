@@ -33,8 +33,10 @@ echo "Done: $BUNDLE"
 
 if [ "${1:-}" = "install" ]; then
   pkill -x "$APP" 2>/dev/null || true
+  for _ in $(seq 1 50); do pgrep -x "$APP" >/dev/null || break; sleep 0.1; done
   rm -rf "/Applications/$APP.app"
   cp -R "$BUNDLE" /Applications/
+  sleep 0.5
   open "/Applications/$APP.app"
   echo "Installed to /Applications/$APP.app"
 fi

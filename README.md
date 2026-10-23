@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Take A Break.</b><br>
-  A tiny menu bar buddy for your Mac that keeps you hydrated, moving and rested.
+  A tiny menu bar buddy for your Mac that keeps you hydrated, moving, rested and calm.
 </p>
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 When you're deep in work, hours just disappear. You forget to drink, you forget to move, and suddenly your back hurts and it's dark outside.
 
-TAB is a little face that lives in your menu bar. It counts down to your next break, reminds you to drink water and to get up from your chair, and quietly keeps track of how you actually work. Over weeks, months and years you can see whether your habits are getting healthier.
+TAB is a little face that lives in your menu bar. It counts down to your next break, reminds you to drink water and to get up from your chair, guides you through a daily deep rest, and keeps an eye on how much time disappears into social media. Over weeks, months and years you can see whether your habits are getting healthier.
 
 No account. No cloud. No dock icon. Just a friendly face next to your clock.
 
@@ -36,10 +36,14 @@ No account. No cloud. No dock icon. Just a friendly face next to your clock.
 | 💧 **Water tracking** | Log a glass with one click, right-click for other sizes, set a daily goal in ml or oz and get reminders to sip. |
 | ☕ **Break tracking** | Hit *Take a break* when you leave and *I'm back* when you return. TAB records every break, how long it was and whether you skipped it. |
 | 🧍 **Stand up & stretch** | Reminders to get off the chair, with an interval based on research for your age group and a new stretch idea every time. |
-| 📊 **Insights** | Day, week, month and year views of your desk time, water, breaks and stand-ups, plus a daily health score and trends. |
+| 🌙 **NSDR & meditation** | A daily 5, 10 or 20 minute deep rest with a calm voice guiding you through it. Daily reminder and streaks included. |
+| 🌬️ **Physiological sigh** | A guided breathing reset: two breaths in through the nose, one long breath out. 1 minute when you need it, 5 minutes as a daily practice. |
+| 📱 **Digital hygiene** | Counts your time in social media apps and websites, nudges you when you've been scrolling too long and keeps notifications for your breaks. |
+| 📊 **Insights** | Day, week, month and year views of desk time, water, breaks, stand-ups, rest and social media, plus a daily health score and trends. |
 | 🧠 **Smart tracking** | Notices when you walk away from the Mac and counts it as a break. Knows when you're watching a video or on a call and won't think you left. |
 | ⏸️ **Pause** | Pause reminders for 30 minutes, 1 hour, 2 hours or until tomorrow. |
 | 🚀 **Starts with your Mac** | Launches at login by default, so you never have to think about it. |
+| ⚡ **Automations** | Start a break, a breathing reset or NSDR from Shortcuts, Raycast or a Stream Deck with `takeabreak://` links. |
 | 📁 **Your data** | Export everything as CSV whenever you like. Erase it with one click. |
 
 ## A quick look
@@ -47,17 +51,19 @@ No account. No cloud. No dock icon. Just a friendly face next to your clock.
 <table>
   <tr>
     <td align="center"><b>Today</b></td>
+    <td align="center"><b>Mind</b></td>
     <td align="center"><b>Insights</b></td>
     <td align="center"><b>Settings</b></td>
   </tr>
   <tr>
     <td valign="top"><img src="docs/today.png" alt="Today view"></td>
+    <td valign="top"><img src="docs/mind.png" alt="Mind view"></td>
     <td valign="top"><img src="docs/insights.png" alt="Insights view"></td>
     <td valign="top"><img src="docs/settings.png" alt="Settings view"></td>
   </tr>
 </table>
 
-The **Today** tab shows how long until your next break, how much you drank, how often you stood up and how many breaks you took. One click on a **+** logs it. The health score at the bottom sums up your day.
+The **Today** tab shows how long until your next break, how much you drank, how often you stood up and how many breaks you took. One click on a **+** logs it. The health score sums up your day, and the row below it starts your daily rest, a breathing reset, or shows your social media time.
 
 <table>
   <tr>
@@ -74,13 +80,13 @@ The **Today** tab shows how long until your next break, how much you drank, how 
 
 ### Lock Screen
 
-For the people who always click "Skip". When the timer runs out, TAB covers every screen, pauses the keyboard and shows you a stretch to do. You get a 30 second warning first so you can save your work. When the break is over, click **I'm back** and you're good to go.
+For the people who always click "Skip". When the timer runs out, TAB covers every screen, pauses the keyboard and shows you a stretch to do, or guides you through a physiological sigh right there. You get a 30 second warning first so you can save your work. When the break is over, click **I'm back** and you're good to go.
 
 There's an emergency exit if you really need it: hold the skip button for 3 seconds. It gets counted as a skipped break though 😉
 
 <p align="center">
-  <img src="docs/lock.png" alt="Lock screen during a break" width="49%">
-  <img src="docs/lock-done.png" alt="Lock screen after the break" width="49%">
+  <img src="docs/lock.webp" alt="Lock screen during a break" width="49%">
+  <img src="docs/lock-breathe.webp" alt="Breathing on the lock screen" width="49%">
 </p>
 
 ### Gentle Nudge
@@ -100,9 +106,64 @@ A small banner slides in under the menu bar. Start the break, give yourself 5 mo
 
 When you come back to your Mac during a break, TAB says hi and asks if you're back, so the break gets logged with its real length.
 
+## Mind
+
+Breaks keep your body going. The **Mind** tab is for your head.
+
+### Daily reset: NSDR or meditation
+
+NSDR (non-sleep deep rest) is a guided body scan you do lying down or leaning back with your eyes closed. Pick NSDR or a simple breath meditation, choose 5, 10 or 20 minutes and press start. A calm voice talks you through it, the screen goes dark, and a soft bell tells you when it's over. Your time counts as a break too.
+
+TAB reminds you once a day at a time you choose (2 pm by default, right in the after-lunch dip) and only if you haven't done it yet. Do it every day and you build a streak.
+
+<p align="center">
+  <img src="docs/banner-mind.png" alt="Daily reset reminder" width="50%">
+</p>
+
+<p align="center">
+  <img src="docs/session-nsdr.webp" alt="NSDR session" width="49%">
+  <img src="docs/session-done.webp" alt="Session complete" width="49%">
+</p>
+
+### Nervous system reset: the physiological sigh
+
+Breathe in through the nose, sip in a little more air on top, then let it all out slowly through the mouth. The bubble grows and shrinks with you, so you can follow along with your eyes closed or open. Use the **1 minute reset** when you feel wound up, or the **5 minute practice** once a day. You can also start it from the lock screen during a break or from the right-click menu.
+
+<p align="center">
+  <img src="docs/session-breath.webp" alt="Physiological sigh" width="70%">
+</p>
+
+### Digital hygiene
+
+TAB counts the time you spend in social media apps like Instagram, WhatsApp or Discord. You choose the apps, and you can add websites too (Safari, Chrome, Arc, Brave, Edge and Vivaldi). Set a daily limit, and if you get stuck scrolling for 5 minutes in a row while you should be working, the little face taps you on the shoulder.
+
+**Notifications only in breaks.** Turn this on and TAB switches Do Not Disturb on while you focus and off again when you take a break, so messages arrive in batches instead of all day long. It uses two tiny shortcuts you create once in the Shortcuts app:
+
+1. **TAB Focus On** with the action *Set Focus › Do Not Disturb › On*
+2. **TAB Focus Off** with the action *Set Focus › Do Not Disturb › Off*
+
+<table>
+  <tr>
+    <td><img src="docs/banner-scrolling.png" alt="Scrolling nudge"></td>
+    <td><img src="docs/banner-social.png" alt="Daily social media limit"></td>
+  </tr>
+</table>
+
+### What the research says
+
+We checked the science before building this, and kept only what holds up.
+
+| Practice | What studies found | Sources |
+| --- | --- | --- |
+| 🌙 NSDR / Yoga Nidra | A single 10 minute NSDR session lowered sleepiness, fatigue and stress and slightly lowered heart rate. 11 minutes of Yoga Nidra a day for a month reduced stress and improved sleep. | [Boukhris 2026](https://doi.org/10.1111/aphw.70180), [Moszeik 2022](https://doi.org/10.1007/s12144-020-01042-2) |
+| 🧘 Meditation | Meditation lowered cortisol, blood pressure and heart rate across 45 trials. Long-term meditators have a thicker prefrontal cortex, though an 8 week course did not change brain structure in the largest trial. | [Pascoe 2017](https://doi.org/10.1016/j.jpsychires.2017.08.004), [Lazar 2005](https://doi.org/10.1097/01.wnr.0000186598.66243.19), [Kral 2022](https://doi.org/10.1126/sciadv.abk3316) |
+| 🌬️ Physiological sigh | 5 minutes of cyclic sighing a day for a month lifted mood and slowed resting breathing more than mindfulness meditation. | [Balban 2023](https://doi.org/10.1016/j.xcrm.2022.100895) |
+| 📱 Social media | Limiting social media to about 10 minutes per platform (30 a day) for 3 weeks reduced loneliness and low mood. | [Hunt 2018](https://doi.org/10.1521/jscp.2018.37.10.751) |
+| 🔕 Notifications | Notifications made people more inattentive. Checking them in batches a few times a day improved focus and mood and lowered stress, more than switching them off completely. | [Kushlev 2016](https://doi.org/10.1145/2858036.2858359), [Fitz 2019](https://doi.org/10.1016/j.chb.2019.07.016) |
+
 ## Your health over time
 
-Switch between **Day**, **Week**, **Month** and **Year**, flip back through older periods with the arrows and hover over any bar to see the exact number. TAB also writes a few notes for you, like how many days you hit your water goal or when you sat way too long.
+Switch between **Day**, **Week**, **Month** and **Year**, flip back through older periods with the arrows and hover over any bar to see the exact number. Look at desk time, water, breaks, stand-ups, rest, social media or your score. TAB also writes a few notes for you, like how many days you hit your water goal or stayed under your social media limit.
 
 <table>
   <tr>
@@ -119,15 +180,16 @@ Switch between **Day**, **Week**, **Month** and **Year**, flip back through olde
 
 ### The health score
 
-Every day gets a score from 0 to 100, built from three things:
+Every day gets a score from 0 to 100, built from four things:
 
 | Part | Weight | What counts |
 | --- | --- | --- |
-| 💧 Hydration | 35% | How close you got to your daily water goal |
-| ☕ Breaks | 35% | Breaks taken compared to the breaks you should have taken. Skipping and very long sitting stretches cost points. |
-| 🧍 Movement | 30% | Stand-ups and breaks compared to how often your age group should get up |
+| 💧 Hydration | 25% | How close you got to your daily water goal |
+| ☕ Breaks | 25% | Breaks taken compared to the breaks you should have taken. Skipping and very long sitting stretches cost points. |
+| 🧍 Movement | 25% | Stand-ups and breaks compared to how often your age group should get up |
+| 🌙 Mind | 25% | Your daily reset, a breathing session, and staying under your social media limit |
 
-85 and up is *Thriving*, 70 and up is *Looking good*.
+If you'd rather leave Mind out, switch it off in the settings and the other three share the score again (35 / 35 / 30). 85 and up is *Thriving*, 70 and up is *Looking good*.
 
 ## How often should you stand up?
 
@@ -173,7 +235,26 @@ The menu bar icon changes with what's going on, so you can tell where you are at
   <img src="docs/menubar.png" alt="Menu bar states" width="80%">
 </p>
 
-Left click opens TAB. Right click gives you a quick menu to start a break, log water, log a stand-up or pause.
+Left click opens TAB. Right click gives you a quick menu to start a break, log water, log a stand-up, breathe, start your NSDR or pause.
+
+## Automations
+
+TAB understands `takeabreak://` links, so you can trigger it from the Shortcuts app, Raycast, Alfred, a Stream Deck or the Terminal:
+
+| Link | What it does |
+| --- | --- |
+| `takeabreak://breathe` | 1 minute physiological sigh (`takeabreak://breathe/5` for 5 minutes) |
+| `takeabreak://nsdr` | Start your NSDR (`takeabreak://nsdr/20` for 20 minutes) |
+| `takeabreak://meditate` | Start a breath meditation |
+| `takeabreak://break` / `takeabreak://back` | Start or end a break |
+| `takeabreak://water` | Log a glass of water (`takeabreak://water/500` for 500 ml) |
+| `takeabreak://stand` | Log a stand-up |
+| `takeabreak://pause/60` / `takeabreak://resume` | Pause reminders for 60 minutes, or resume |
+| `takeabreak://end` | End the running breathing or rest session |
+
+```bash
+open takeabreak://breathe
+```
 
 ## Install
 
@@ -187,13 +268,16 @@ cd TAB
 
 `./build.sh` builds a universal app (Apple silicon and Intel) into `build/TAB.app`. Adding `install` copies it to `/Applications` and starts it.
 
-### Lock Screen permission
+### Permissions
 
-The Lock Screen style can also pause the keyboard during a break. For that, macOS asks you to allow TAB under **System Settings › Privacy & Security › Accessibility**. Without it, the lock screen still works, the keyboard just isn't paused.
+TAB works without any special permissions. Two optional features ask macOS first:
+
+- **Lock Screen** can also pause the keyboard during a break. Allow TAB under **System Settings › Privacy & Security › Accessibility**. Without it, the lock screen still works, the keyboard just isn't paused.
+- **Counting social media websites** reads the address of the open browser tab. macOS asks you once per browser. Apps are counted without any permission.
 
 ## Privacy
 
-Everything stays on your Mac. TAB has no account, no analytics and never connects to the internet. Your history lives in a single file:
+Everything stays on your Mac. TAB has no account, no analytics and never connects to the internet. It only remembers *how long* you spent in a social media app or on a site, never what you did there. Your history lives in a single file:
 
 ```
 ~/Library/Application Support/TAB/history.json
@@ -208,7 +292,9 @@ Sources/
   Engine.swift          timers, breaks, reminders and away detection
   HistoryStore.swift    saves every day to history.json
   Analytics.swift       day, week, month and year insights
-  Health.swift          stand-up research, tips and stretches
+  Health.swift          stand-up research, mind research and stretches
+  Mind.swift            NSDR, meditation, breathing, social media and Focus
+  MindView.swift        the Mind tab and the guided sessions
   StatusBar.swift       menu bar face and the panel
   Banner.swift          reminder banners
   LockScreen.swift      full screen break

@@ -23,7 +23,7 @@ struct TodayView: View {
                 BreaksCard(day: today)
             }
             ScoreStrip(day: today)
-            TipLine()
+            MindStrip(day: today)
         }
         .padding(.horizontal, 16)
         .padding(.top, 4)
@@ -258,23 +258,6 @@ struct BreaksCard: View {
     }
 }
 
-struct TipLine: View {
-    var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "lightbulb.fill")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundColor(Theme.score)
-                .padding(.top, 1)
-            Text(Tips.today)
-                .font(.system(size: 11))
-                .foregroundColor(Theme.dim)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 6)
-    }
-}
-
 struct ScoreStrip: View {
     var day: DayLog
 
@@ -317,6 +300,9 @@ enum NudgeCopy {
         case .stand: return engine.stretch.title
         case .water: return "Sip, sip"
         case .welcomeBack: return engine.breakComplete ? "Break complete" : "Welcome back"
+        case .mindPractice: return "Time for your daily reset"
+        case .socialLimit: return "Social media check"
+        case .scrolling: return "Still scrolling?"
         }
     }
 
@@ -336,6 +322,12 @@ enum NudgeCopy {
             return engine.breakComplete
                 ? "You rested for \(Fmt.duration(engine.breakElapsed)). Ready to get back to it?"
                 : "You've been on a break for \(Fmt.duration(engine.breakElapsed))."
+        case .mindPractice:
+            return "\(prefs.mindGoal) min of \(prefs.mindKind.title). Find a comfy spot, close your eyes and let TAB guide you."
+        case .socialLimit:
+            return "You've spent \(Fmt.duration(engine.store.today.socialSeconds)) on social media today. That's your \(prefs.socialLimit) min limit."
+        case .scrolling:
+            return "You've been scrolling for 5 minutes. One calm breath, then back to what matters?"
         }
     }
 }
@@ -343,6 +335,7 @@ enum NudgeCopy {
 struct NudgeButtons: View {
     @EnvironmentObject var engine: Engine
     @EnvironmentObject var prefs: Preferences
+    @EnvironmentObject var mind: Mind
     var nudge: Nudge
 
     var body: some View {
@@ -374,6 +367,23 @@ struct NudgeButtons: View {
                 Button("I'm back") { engine.endBreak() }
                     .buttonStyle(PillButtonStyle(filled: true, tint: Theme.rest, height: 30))
                 Button("Still resting") { engine.stayOnBreak() }
+                    .buttonStyle(PillButtonStyle(filled: false, height: 30))
+            case .mindPractice:
+                Button("Start") { mind.begin(prefs.mindKind, minutes: prefs.mindGoal) }
+                    .buttonStyle(PillButtonStyle(filled: true, tint: Theme.mind, height: 30))
+                Button("In 1 hour") { mind.remindLater() }
+                    .buttonStyle(PillButtonStyle(filled: false, height: 30, expand: false))
+                Button("Not today") { mind.skipToday() }
+                    .buttonStyle(PillButtonStyle(filled: false, tint: Theme.dim, height: 30, expand: false))
+            case .socialLimit:
+                Button("Got it") { engine.clearNudge() }
+                    .buttonStyle(PillButtonStyle(filled: true, tint: Theme.digital, height: 30))
+                Button("Breathe") { mind.begin(.breathing, minutes: 1) }
+                    .buttonStyle(PillButtonStyle(filled: false, height: 30))
+            case .scrolling:
+                Button("Breathe") { mind.begin(.breathing, minutes: 1) }
+                    .buttonStyle(PillButtonStyle(filled: true, tint: Theme.breath, height: 30))
+                Button("Back to work") { engine.clearNudge() }
                     .buttonStyle(PillButtonStyle(filled: false, height: 30))
             }
         }

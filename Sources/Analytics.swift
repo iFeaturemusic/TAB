@@ -12,6 +12,8 @@ enum Metric: String, CaseIterable {
     case water = "Water"
     case breaks = "Breaks"
     case moves = "Moves"
+    case mind = "Mind"
+    case social = "Social"
     case score = "Score"
 
     var color: Color {
@@ -20,6 +22,8 @@ enum Metric: String, CaseIterable {
         case .water: return Theme.water
         case .breaks: return Theme.rest
         case .moves: return Theme.move
+        case .mind: return Theme.mind
+        case .social: return Theme.digital
         case .score: return Theme.score
         }
     }
@@ -126,6 +130,8 @@ struct Insights {
         case .water: return ounces ? Double(day.waterML) / 29.5735 : Double(day.waterML) / 1000
         case .breaks: return Double(day.breakCount)
         case .moves: return Double(day.standCount)
+        case .mind: return Double(day.restSeconds) / 60
+        case .social: return Double(day.socialSeconds) / 60
         case .score: return day.healthScore.map(Double.init)
         }
     }
@@ -145,6 +151,8 @@ struct Insights {
                     v = ounces ? Double(ml) / 29.5735 : Double(ml)
                 case .breaks: v = Double(day.breaks.filter { inHour($0.start) }.count)
                 case .moves: v = Double(day.standUps.filter(inHour).count)
+                case .mind: v = Double(day.mindSessions.filter { $0.kind != .breathing && inHour($0.start) }.reduce(0) { $0 + $1.seconds }) / 60
+                case .social: v = Double(day.hourlySocial[hour]) / 60
                 }
                 return ChartPoint(date: date, value: v)
             }
@@ -188,6 +196,12 @@ struct Insights {
         case (.moves, .day): return "stand-ups per hour"
         case (.moves, .year): return "stand-ups per day, monthly average"
         case (.moves, _): return "stand-ups per day"
+        case (.mind, .day): return "minutes of rest per hour"
+        case (.mind, .year): return "minutes of rest per day, monthly average"
+        case (.mind, _): return "minutes of NSDR or meditation per day"
+        case (.social, .day): return "minutes of social media per hour"
+        case (.social, .year): return "social media minutes per day, monthly average"
+        case (.social, _): return "minutes of social media per day"
         case (.score, .year): return "monthly average score"
         case (.score, _): return "daily health score"
         }
@@ -203,6 +217,8 @@ struct Insights {
         let stands = days.reduce(0) { $0 + $1.standCount }
         let longest = days.map(\.longestSit).max() ?? 0
         let avgBreak = breaks == 0 ? 0 : breakSecs / breaks
+        let rest = days.reduce(0) { $0 + $1.restSeconds }
+        let social = days.reduce(0) { $0 + $1.socialSeconds }
 
         if period == .day {
             return [
@@ -212,6 +228,8 @@ struct Insights {
                 Stat(title: "Avg break", value: Fmt.duration(avgBreak), tint: Theme.rest),
                 Stat(title: "Stand-ups", value: "\(stands)", tint: Theme.move),
                 Stat(title: "Longest sit", value: Fmt.duration(longest), tint: Theme.alert),
+                Stat(title: "Rest & meditation", value: Fmt.duration(rest), tint: Theme.mind),
+                Stat(title: "Social media", value: Fmt.duration(social), tint: Theme.digital),
             ]
         }
         return [
@@ -221,6 +239,8 @@ struct Insights {
             Stat(title: "Avg break", value: Fmt.duration(avgBreak), tint: Theme.rest),
             Stat(title: "Stand-ups / day", value: Fmt.number(Double(stands) / n), tint: Theme.move),
             Stat(title: "Longest sit", value: Fmt.duration(longest), tint: Theme.alert),
+            Stat(title: "Rest / day", value: Fmt.duration(Int(Double(rest) / n)), tint: Theme.mind),
+            Stat(title: "Social / day", value: Fmt.duration(Int(Double(social) / n)), tint: Theme.digital),
         ]
     }
 
@@ -264,6 +284,16 @@ struct Insights {
         let longest = days.map(\.longestSit).max() ?? 0
         if longest > prefs.standMinutes * 60 * 2 {
             notes.append("Your longest sit was \(Fmt.duration(longest)). Try to stand up every \(prefs.standMinutes) min.")
+        }
+
+        if period != .day {
+            let resets = days.filter(\.restDone).count
+            if resets > 0 { notes.append("You did your daily reset on \(resets) of \(days.count) days.") }
+            let limited = days.filter { $0.socialLimit > 0 }
+            if !limited.isEmpty {
+                let under = limited.filter { $0.socialSeconds <= $0.socialLimit * 60 }.count
+                notes.append("You stayed under your social media limit on \(under) of \(limited.count) days.")
+            }
         }
 
         let skipped = days.reduce(0) { $0 + $1.skippedBreaks }

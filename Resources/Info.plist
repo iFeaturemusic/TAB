@@ -13,9 +13,9 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.0</string>
+    <string>2.1</string>
     <key>CFBundleVersion</key>
-    <string>2</string>
+    <string>3</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>LSUIElement</key>
@@ -24,6 +24,19 @@
     <string>13.0</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.healthcare-fitness</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.ifeature.TAB</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>takeabreak</string>
+            </array>
+        </dict>
+    </array>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>TAB checks which website is open in your browser so it can count your time on social media. Nothing leaves your Mac.</string>
     <key>NSHumanReadableCopyright</key>
     <string>© 2026 iFeature</string>
 </dict>

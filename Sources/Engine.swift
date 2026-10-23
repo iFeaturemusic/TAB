@@ -16,6 +16,9 @@ final class Engine: ObservableObject {
     @Published private(set) var awayFor = 0
     @Published private(set) var loggedWaterThisBreak = false
     @Published private(set) var stretchedThisBreak = false
+    @Published private(set) var breathedThisBreak = false
+
+    var isGuided = false
 
     let prefs: Preferences
     let store: HistoryStore
@@ -126,7 +129,7 @@ final class Engine: ObservableObject {
         }
 
         countFocus(now)
-        if nudge == .breakTime { return }
+        if nudge == .breakTime || isGuided { return }
 
         focusLeft = max(0, focusLeft - 1)
         if prefs.standReminders { standLeft = max(0, standLeft - 1) }
@@ -179,6 +182,8 @@ final class Engine: ObservableObject {
         guard let start = breakStart else { return }
         breakElapsed = Int(now.timeIntervalSince(start))
 
+        if isGuided { return }
+
         if breakComplete && !breakDoneAnnounced {
             breakDoneAnnounced = true
             if isScreenLocked {
@@ -216,6 +221,8 @@ final class Engine: ObservableObject {
         let goal = prefs.waterGoal
         let work = workLength
         let stand = standLength
+        let mindGoal = prefs.scoredMindGoal
+        let socialLimit = prefs.scoredSocialLimit
         store.update(now) { day in
             day.focusSeconds += 1
             day.hourlyFocus[hour] += 1
@@ -223,12 +230,30 @@ final class Engine: ObservableObject {
             day.waterGoal = goal
             day.workInterval = work
             day.standInterval = stand
+            day.mindGoal = mindGoal
+            day.socialLimit = socialLimit
         }
     }
 
     private func show(_ kind: Nudge) {
         nudgeShownAt = Date()
         nudge = kind
+    }
+
+    @discardableResult
+    func offer(_ kind: Nudge) -> Bool {
+        guard nudge == nil, phase == .focus, !isGuided else { return false }
+        show(kind)
+        SoundPlayer.play(prefs, volume: 0.5)
+        return true
+    }
+
+    func clearNudge() {
+        nudge = nil
+    }
+
+    func markBreathed() {
+        breathedThisBreak = true
     }
 
     private func wentAway(at date: Date) {
@@ -265,6 +290,7 @@ final class Engine: ObservableObject {
         breakIdlePeak = 0
         loggedWaterThisBreak = false
         stretchedThisBreak = false
+        breathedThisBreak = false
         stretch = Stretch.random(excluding: stretch)
         pausedUntil = nil
         phase = .onBreak
@@ -362,6 +388,7 @@ final class Engine: ObservableObject {
         case .lockSoon: nudge = nil
         case .stand, .water: later()
         case .welcomeBack: stayOnBreak()
+        case .mindPractice, .socialLimit, .scrolling: nudge = nil
         case nil: break
         }
     }

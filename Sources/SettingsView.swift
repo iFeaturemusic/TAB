@@ -5,6 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var prefs: Preferences
     @EnvironmentObject var engine: Engine
     @EnvironmentObject var store: HistoryStore
+    @EnvironmentObject var mind: Mind
     @State private var launchAtLogin = LoginItem.isEnabled
 
     var body: some View {
@@ -14,6 +15,8 @@ struct SettingsView: View {
                 rhythm
                 water
                 movement
+                mindSection
+                digitalSection
                 smart
                 sound
                 general
@@ -172,6 +175,153 @@ struct SettingsView: View {
             }
             .card(padding: 12, radius: 16)
         }
+    }
+
+    private var mindSection: some View {
+        VStack(spacing: 8) {
+            SectionTitle(text: "Mind")
+            VStack(spacing: 0) {
+                Row(title: "Practice") {
+                    HStack(spacing: 4) {
+                        Chip(title: "NSDR", selected: prefs.mindKind == .nsdr, tint: Theme.mind) { prefs.mindKind = .nsdr }
+                        Chip(title: "Meditation", selected: prefs.mindKind == .meditation, tint: Theme.mind) { prefs.mindKind = .meditation }
+                    }
+                    .frame(width: 150)
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Daily goal") {
+                    ValueStepper(value: $prefs.mindGoal, range: 5...30, step: 5) { "\($0) min" }
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Remind me daily") {
+                    PillToggle(isOn: $prefs.mindReminder, tint: Theme.mind)
+                }
+                if prefs.mindReminder {
+                    Divider().overlay(Theme.stroke)
+                    Row(title: "At", subtitle: "Only if you haven't done it yet") {
+                        ValueStepper(value: $prefs.mindReminderAt, range: 6 * 60...21 * 60, step: 30) { Fmt.timeOfDay($0) }
+                    }
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Voice guidance", subtitle: "A calm voice talks you through each session") {
+                    PillToggle(isOn: $prefs.voiceGuidance, tint: Theme.mind)
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Count in health score") {
+                    PillToggle(isOn: $prefs.mindInScore, tint: Theme.mind)
+                }
+            }
+            .card(padding: 4, radius: 16)
+        }
+    }
+
+    private var digitalSection: some View {
+        VStack(spacing: 8) {
+            SectionTitle(text: "Digital hygiene")
+            VStack(spacing: 0) {
+                Row(title: "Track social media", subtitle: "Counts time in the apps below") {
+                    PillToggle(isOn: $prefs.socialTracking, tint: Theme.digital)
+                }
+                if prefs.socialTracking {
+                    Divider().overlay(Theme.stroke)
+                    Row(title: "Daily limit") {
+                        ValueStepper(value: $prefs.socialLimit, range: 10...180, step: 5) { "\($0) min" }
+                    }
+                    Divider().overlay(Theme.stroke)
+                    Row(title: "Nudge after 5 min of scrolling") {
+                        PillToggle(isOn: $prefs.scrollNudge, tint: Theme.digital)
+                    }
+                    Divider().overlay(Theme.stroke)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Apps")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white)
+                        FlowLayout(spacing: 5) {
+                            ForEach(installedSocialApps, id: \.self) { id in
+                                RemovableChip(title: Distractions.name(for: id)) {
+                                    prefs.socialApps.removeAll { $0 == id }
+                                }
+                            }
+                            AddChip(title: "Add app") { addApp() }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 9)
+                    Divider().overlay(Theme.stroke)
+                    Row(title: "Also count websites", subtitle: "Safari, Chrome, Arc, Brave, Edge and Vivaldi. macOS asks you once.") {
+                        PillToggle(isOn: $prefs.trackWebsites, tint: Theme.digital)
+                    }
+                    if prefs.trackWebsites {
+                        if mind.websitesDenied {
+                            Text("TAB isn't allowed to read your browser yet. Turn it on in System Settings › Privacy & Security › Automation.")
+                                .font(.system(size: 10))
+                                .foregroundColor(Theme.alert)
+                                .padding(.horizontal, 10)
+                                .padding(.bottom, 6)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        FlowLayout(spacing: 5) {
+                            ForEach(prefs.socialSites, id: \.self) { site in
+                                RemovableChip(title: site) { prefs.socialSites.removeAll { $0 == site } }
+                            }
+                            AddChip(title: "Add website") { addSite() }
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 9)
+                    }
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Notifications only in breaks", subtitle: "Do Not Disturb while you focus, via Shortcuts") {
+                    PillToggle(isOn: $prefs.silenceWhileFocus, tint: Theme.digital)
+                }
+                if prefs.silenceWhileFocus && !mind.shortcutsReady {
+                    ShortcutSetup()
+                        .padding(.horizontal, 6)
+                        .padding(.bottom, 6)
+                }
+            }
+            .card(padding: 4, radius: 16)
+        }
+    }
+
+    private var installedSocialApps: [String] {
+        prefs.socialApps.filter { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil }
+    }
+
+    private func addApp() {
+        let running = NSWorkspace.shared.runningApplications
+            .filter { $0.activationPolicy == .regular }
+            .compactMap { app -> (String, String)? in
+                guard let id = app.bundleIdentifier, id != Bundle.main.bundleIdentifier,
+                      !prefs.socialApps.contains(id) else { return nil }
+                return (id, app.localizedName ?? id)
+            }
+            .sorted { $0.1.localizedCaseInsensitiveCompare($1.1) == .orderedAscending }
+        let items: [NSMenuItem] = running.isEmpty
+            ? [NSMenuItem(title: "Open the app first, then add it here", action: nil, keyEquivalent: "")]
+            : running.map { id, name in MenuAction(name) { prefs.socialApps.append(id) } }
+        Popup.show(items)
+    }
+
+    private func addSite() {
+        let alert = NSAlert()
+        alert.messageText = "Add a website"
+        alert.informativeText = "For example tiktok.com. Subdomains count too."
+        let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 240, height: 24))
+        field.placeholderString = "example.com"
+        alert.accessoryView = field
+        alert.addButton(withTitle: "Add")
+        alert.addButton(withTitle: "Cancel")
+        PanelController.shared?.keepOpen = true
+        NSApp.activate(ignoringOtherApps: true)
+        alert.window.initialFirstResponder = field
+        if alert.runModal() == .alertFirstButtonReturn {
+            var site = field.stringValue.lowercased().trimmingCharacters(in: .whitespaces)
+            if let host = URL(string: site.contains("://") ? site : "https://" + site)?.host { site = host }
+            if site.hasPrefix("www.") { site.removeFirst(4) }
+            if !site.isEmpty && !prefs.socialSites.contains(site) { prefs.socialSites.append(site) }
+        }
+        PanelController.shared?.keepOpen = false
     }
 
     private var smart: some View {
@@ -383,6 +533,6 @@ struct StyleCard: View {
 
 extension Bundle {
     var version: String {
-        (infoDictionary?["CFBundleShortVersionString"] as? String) ?? "2.0"
+        (infoDictionary?["CFBundleShortVersionString"] as? String) ?? "2.1"
     }
 }

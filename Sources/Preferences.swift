@@ -25,6 +25,21 @@ final class Preferences: ObservableObject {
     @Published var soundName: String { didSet { defaults.set(soundName, forKey: "soundName") } }
     @Published var customSoundPath: String { didSet { defaults.set(customSoundPath, forKey: "customSoundPath") } }
 
+    @Published var mindGoal: Int { didSet { defaults.set(mindGoal, forKey: "mindGoal") } }
+    @Published var mindKind: MindKind { didSet { defaults.set(mindKind.rawValue, forKey: "mindKind") } }
+    @Published var mindReminder: Bool { didSet { defaults.set(mindReminder, forKey: "mindReminder") } }
+    @Published var mindReminderAt: Int { didSet { defaults.set(mindReminderAt, forKey: "mindReminderAt") } }
+    @Published var voiceGuidance: Bool { didSet { defaults.set(voiceGuidance, forKey: "voiceGuidance") } }
+    @Published var mindInScore: Bool { didSet { defaults.set(mindInScore, forKey: "mindInScore") } }
+
+    @Published var socialTracking: Bool { didSet { defaults.set(socialTracking, forKey: "socialTracking") } }
+    @Published var socialLimit: Int { didSet { defaults.set(socialLimit, forKey: "socialLimit") } }
+    @Published var trackWebsites: Bool { didSet { defaults.set(trackWebsites, forKey: "trackWebsites") } }
+    @Published var socialApps: [String] { didSet { defaults.set(socialApps, forKey: "socialApps") } }
+    @Published var socialSites: [String] { didSet { defaults.set(socialSites, forKey: "socialSites") } }
+    @Published var scrollNudge: Bool { didSet { defaults.set(scrollNudge, forKey: "scrollNudge") } }
+    @Published var silenceWhileFocus: Bool { didSet { defaults.set(silenceWhileFocus, forKey: "silenceWhileFocus") } }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         func int(_ key: String, _ fallback: Int, legacy: String? = nil) -> Int {
@@ -57,9 +72,26 @@ final class Preferences: ObservableObject {
         soundEnabled = bool("soundEnabled", true)
         soundName = defaults.string(forKey: "soundName") ?? defaults.string(forKey: "selectedSound") ?? "Glass"
         customSoundPath = defaults.string(forKey: "customSoundPath") ?? ""
+
+        mindGoal = min(30, max(5, int("mindGoal", 10)))
+        mindKind = MindKind(rawValue: defaults.string(forKey: "mindKind") ?? "") ?? .nsdr
+        mindReminder = bool("mindReminder", true)
+        mindReminderAt = int("mindReminderAt", 14 * 60)
+        voiceGuidance = bool("voiceGuidance", true)
+        mindInScore = bool("mindInScore", true)
+
+        socialTracking = bool("socialTracking", true)
+        socialLimit = int("socialLimit", 30)
+        trackWebsites = bool("trackWebsites", false)
+        socialApps = defaults.stringArray(forKey: "socialApps") ?? Distractions.defaultApps
+        socialSites = defaults.stringArray(forKey: "socialSites") ?? Distractions.defaultSites
+        scrollNudge = bool("scrollNudge", true)
+        silenceWhileFocus = bool("silenceWhileFocus", false)
     }
 
     var standMinutes: Int { customStand ? customStandMinutes : ageGroup.standEvery }
+    var scoredMindGoal: Int { mindInScore ? mindGoal : 0 }
+    var scoredSocialLimit: Int { socialTracking ? socialLimit : 0 }
 
     func bool(_ key: String) -> Bool { defaults.bool(forKey: key) }
     func set(_ value: Bool, _ key: String) { defaults.set(value, forKey: key) }

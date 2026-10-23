@@ -87,18 +87,21 @@ final class StatusBarController: NSObject {
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let engine: Engine
     private let prefs: Preferences
+    private let mind: Mind
     private let panel: PanelController
     private var bag = Set<AnyCancellable>()
     private var blinking = false
     private var winking = false
 
-    init(engine: Engine, prefs: Preferences, store: HistoryStore) {
+    init(engine: Engine, prefs: Preferences, store: HistoryStore, mind: Mind) {
         self.engine = engine
         self.prefs = prefs
+        self.mind = mind
         panel = PanelController(root: RootView()
             .environmentObject(engine)
             .environmentObject(prefs)
-            .environmentObject(store))
+            .environmentObject(store)
+            .environmentObject(mind))
         super.init()
 
         if let button = item.button {
@@ -110,7 +113,7 @@ final class StatusBarController: NSObject {
         panel.anchor = { [weak self] in self?.anchorFrame }
 
         engine.objectWillChange
-            .merge(with: prefs.objectWillChange)
+            .merge(with: prefs.objectWillChange, mind.objectWillChange)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refresh() }
             .store(in: &bag)
@@ -154,6 +157,18 @@ final class StatusBarController: NSObject {
         menu.addItem(MenuAction("Log a glass of water", symbol: "drop") { [weak self] in self?.engine.logWater() })
         menu.addItem(MenuAction("I stood up", symbol: "figure.walk") { [weak self] in self?.engine.logStand() })
         menu.addItem(.separator())
+        if mind.session != nil {
+            menu.addItem(MenuAction("End session", symbol: "stop.fill") { [weak self] in self?.mind.finish(completed: false) })
+        } else {
+            menu.addItem(MenuAction("Physiological sigh (1 min)", symbol: "wind") { [weak self] in
+                self?.mind.begin(.breathing, minutes: 1)
+            })
+            menu.addItem(MenuAction("\(prefs.mindKind.title) (\(prefs.mindGoal) min)", symbol: prefs.mindKind.symbol) { [weak self] in
+                guard let self else { return }
+                self.mind.begin(self.prefs.mindKind, minutes: self.prefs.mindGoal)
+            })
+        }
+        menu.addItem(.separator())
         Popup.pauseItems(engine).forEach(menu.addItem)
         menu.addItem(.separator())
         menu.addItem(MenuAction("Open TAB", symbol: "face.smiling") { [weak self] in self?.panel.show() })
@@ -166,6 +181,7 @@ final class StatusBarController: NSObject {
 
     private var mood: Mood {
         if winking { return .wink }
+        if mind.session != nil { return .sleepy }
         switch engine.phase {
         case .focus: return engine.nudge == nil ? .happy : .alert
         case .onBreak: return engine.breakComplete ? .happy : .sleepy
@@ -176,6 +192,7 @@ final class StatusBarController: NSObject {
 
     private var title: String {
         guard prefs.showTimer else { return "" }
+        if mind.session != nil { return Fmt.clock(mind.remaining) }
         switch engine.phase {
         case .focus:
             if engine.nudge == .breakTime { return "break" }
