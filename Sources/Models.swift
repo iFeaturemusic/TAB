@@ -97,6 +97,10 @@ struct DayLog: Codable, Identifiable {
     var socialApps: [String: Int] = [:]
     var mindGoal = 0
     var socialLimit = 0
+    var phoneMinutes = 0
+    var phoneApps: [String: Int] = [:]
+    var phonePasses = 0
+    var phonePassMinutes = 0
 
     var id: String { key }
 
@@ -126,6 +130,10 @@ struct DayLog: Codable, Identifiable {
         socialApps = try c.decodeIfPresent([String: Int].self, forKey: .socialApps) ?? [:]
         mindGoal = try c.decodeIfPresent(Int.self, forKey: .mindGoal) ?? 0
         socialLimit = try c.decodeIfPresent(Int.self, forKey: .socialLimit) ?? 0
+        phoneMinutes = try c.decodeIfPresent(Int.self, forKey: .phoneMinutes) ?? 0
+        phoneApps = try c.decodeIfPresent([String: Int].self, forKey: .phoneApps) ?? [:]
+        phonePasses = try c.decodeIfPresent(Int.self, forKey: .phonePasses) ?? 0
+        phonePassMinutes = try c.decodeIfPresent(Int.self, forKey: .phonePassMinutes) ?? 0
     }
 
     var date: Date { HistoryStore.date(fromKey: key) ?? Date() }
@@ -135,12 +143,15 @@ struct DayLog: Codable, Identifiable {
     var breakCount: Int { breaks.count }
     var standCount: Int { standUps.count }
 
+    var phoneSocialSeconds: Int { phoneApps.values.reduce(0, +) * 60 }
+    var allSocialSeconds: Int { socialSeconds + phoneSocialSeconds }
+
     var restSeconds: Int { mindSessions.filter { $0.kind != .breathing }.reduce(0) { $0 + $1.seconds } }
     var breathCount: Int { mindSessions.filter { $0.kind == .breathing }.count }
     var restDone: Bool { mindGoal > 0 && restSeconds >= mindGoal * 60 }
 
     var hasData: Bool {
-        focusSeconds >= 10 * 60 || !water.isEmpty || !breaks.isEmpty || !standUps.isEmpty || !mindSessions.isEmpty
+        focusSeconds >= 10 * 60 || !water.isEmpty || !breaks.isEmpty || !standUps.isEmpty || !mindSessions.isEmpty || phoneMinutes > 0
     }
 
     var hydration: Double {
@@ -166,7 +177,7 @@ struct DayLog: Codable, Identifiable {
     var digital: Double {
         guard socialLimit > 0 else { return 1 }
         let limit = Double(socialLimit * 60)
-        let over = Double(socialSeconds) - limit
+        let over = Double(allSocialSeconds) - limit
         return over <= 0 ? 1 : max(0, 1 - over / limit)
     }
 

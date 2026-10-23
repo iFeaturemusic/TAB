@@ -93,7 +93,7 @@ final class StatusBarController: NSObject {
     private var blinking = false
     private var winking = false
 
-    init(engine: Engine, prefs: Preferences, store: HistoryStore, mind: Mind) {
+    init(engine: Engine, prefs: Preferences, store: HistoryStore, mind: Mind, link: PhoneLink) {
         self.engine = engine
         self.prefs = prefs
         self.mind = mind
@@ -101,7 +101,8 @@ final class StatusBarController: NSObject {
             .environmentObject(engine)
             .environmentObject(prefs)
             .environmentObject(store)
-            .environmentObject(mind))
+            .environmentObject(mind)
+            .environmentObject(link))
         super.init()
 
         if let button = item.button {

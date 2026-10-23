@@ -14,6 +14,7 @@ enum Metric: String, CaseIterable {
     case moves = "Moves"
     case mind = "Mind"
     case social = "Social"
+    case phone = "iPhone"
     case score = "Score"
 
     var color: Color {
@@ -24,6 +25,7 @@ enum Metric: String, CaseIterable {
         case .moves: return Theme.move
         case .mind: return Theme.mind
         case .social: return Theme.digital
+        case .phone: return Theme.digital
         case .score: return Theme.score
         }
     }
@@ -131,7 +133,8 @@ struct Insights {
         case .breaks: return Double(day.breakCount)
         case .moves: return Double(day.standCount)
         case .mind: return Double(day.restSeconds) / 60
-        case .social: return Double(day.socialSeconds) / 60
+        case .social: return Double(day.allSocialSeconds) / 60
+        case .phone: return Double(day.phoneMinutes) / 60
         case .score: return day.healthScore.map(Double.init)
         }
     }
@@ -153,6 +156,7 @@ struct Insights {
                 case .moves: v = Double(day.standUps.filter(inHour).count)
                 case .mind: v = Double(day.mindSessions.filter { $0.kind != .breathing && inHour($0.start) }.reduce(0) { $0 + $1.seconds }) / 60
                 case .social: v = Double(day.hourlySocial[hour]) / 60
+                case .phone: v = 0
                 }
                 return ChartPoint(date: date, value: v)
             }
@@ -201,7 +205,9 @@ struct Insights {
         case (.mind, _): return "minutes of NSDR or meditation per day"
         case (.social, .day): return "minutes of social media per hour"
         case (.social, .year): return "social media minutes per day, monthly average"
-        case (.social, _): return "minutes of social media per day"
+        case (.social, _): return "minutes of social media per day, Mac and iPhone"
+        case (.phone, .year): return "hours on your iPhone per day, monthly average"
+        case (.phone, _): return "hours on your iPhone per day"
         case (.score, .year): return "monthly average score"
         case (.score, _): return "daily health score"
         }
@@ -218,7 +224,8 @@ struct Insights {
         let longest = days.map(\.longestSit).max() ?? 0
         let avgBreak = breaks == 0 ? 0 : breakSecs / breaks
         let rest = days.reduce(0) { $0 + $1.restSeconds }
-        let social = days.reduce(0) { $0 + $1.socialSeconds }
+        let social = days.reduce(0) { $0 + $1.allSocialSeconds }
+        let phone = days.reduce(0) { $0 + $1.phoneMinutes * 60 }
 
         if period == .day {
             return [
@@ -230,6 +237,8 @@ struct Insights {
                 Stat(title: "Longest sit", value: Fmt.duration(longest), tint: Theme.alert),
                 Stat(title: "Rest & meditation", value: Fmt.duration(rest), tint: Theme.mind),
                 Stat(title: "Social media", value: Fmt.duration(social), tint: Theme.digital),
+                Stat(title: "iPhone", value: phone > 0 ? Fmt.duration(phone) : "–", tint: Theme.digital),
+                Stat(title: "Posting passes", value: "\(days.reduce(0) { $0 + $1.phonePasses })", tint: Theme.mind),
             ]
         }
         return [
@@ -241,6 +250,8 @@ struct Insights {
             Stat(title: "Longest sit", value: Fmt.duration(longest), tint: Theme.alert),
             Stat(title: "Rest / day", value: Fmt.duration(Int(Double(rest) / n)), tint: Theme.mind),
             Stat(title: "Social / day", value: Fmt.duration(Int(Double(social) / n)), tint: Theme.digital),
+            Stat(title: "iPhone / day", value: phone > 0 ? Fmt.duration(Int(Double(phone) / n)) : "–", tint: Theme.digital),
+            Stat(title: "Posting passes", value: "\(days.reduce(0) { $0 + $1.phonePasses })", tint: Theme.mind),
         ]
     }
 

@@ -300,7 +300,9 @@ struct DigitalCard: View {
     var body: some View {
         let today = store.today
         let limit = prefs.socialLimit * 60
-        let over = limit > 0 && today.socialSeconds > limit
+        let social = today.allSocialSeconds
+        let over = limit > 0 && social > limit
+        let apps = today.socialApps.merging(today.phoneApps.mapValues { $0 * 60 }, uniquingKeysWith: +)
         VStack(alignment: .leading, spacing: 12) {
             MindCardHeader(
                 symbol: "iphone.gen3.radiowaves.left.and.right",
@@ -311,17 +313,17 @@ struct DigitalCard: View {
             if prefs.socialTracking {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline) {
-                        Text(Fmt.duration(today.socialSeconds))
+                        Text(Fmt.duration(social))
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .monospacedDigit()
                             .foregroundColor(over ? Theme.alert : .white)
-                        Text("of \(prefs.socialLimit) min")
+                        Text(today.phoneSocialSeconds > 0 ? "of \(prefs.socialLimit) min · Mac + iPhone" : "of \(prefs.socialLimit) min")
                             .font(.system(size: 11))
                             .foregroundColor(Theme.dim)
                         Spacer()
                     }
-                    BarView(progress: Double(today.socialSeconds) / Double(max(1, limit)), color: over ? Theme.alert : Theme.digital)
-                    let top = today.socialApps.sorted { $0.value > $1.value }.prefix(3)
+                    BarView(progress: Double(social) / Double(max(1, limit)), color: over ? Theme.alert : Theme.digital)
+                    let top = apps.sorted { $0.value > $1.value }.prefix(3)
                     if !top.isEmpty {
                         HStack(spacing: 6) {
                             ForEach(Array(top), id: \.key) { app in
@@ -337,6 +339,8 @@ struct DigitalCard: View {
                     }
                 }
             }
+            Divider().overlay(Theme.stroke)
+            PhoneSummary(day: today)
             Divider().overlay(Theme.stroke)
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -365,6 +369,48 @@ struct DigitalCard: View {
     private var silenceStatus: String {
         if !prefs.silenceWhileFocus { return "Turns on Do Not Disturb while you focus" }
         return mind.shortcutsReady ? "Do Not Disturb is on while you focus" : "Needs two shortcuts, see below"
+    }
+}
+
+struct PhoneSummary: View {
+    @EnvironmentObject var link: PhoneLink
+    @EnvironmentObject var prefs: Preferences
+    var day: DayLog
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "iphone")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(Theme.digital)
+                Text("iPhone")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                Spacer()
+                Text(day.phoneMinutes > 0 ? Fmt.duration(day.phoneMinutes * 60) : "–")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(.white)
+            }
+            if day.phonePasses > 0 {
+                Text("\(day.phonePasses) posting \(day.phonePasses == 1 ? "pass" : "passes") · \(day.phonePassMinutes) min unlocked")
+                    .font(.system(size: 11))
+                    .foregroundColor(Theme.mind)
+            }
+            Text(status)
+                .font(.system(size: 10))
+                .foregroundColor(link.error == nil ? Theme.dim : Theme.alert)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var status: String {
+        if let error = link.error { return error }
+        if link.phones.isEmpty { return "Pair your iPhone in Settings › Digital hygiene." }
+        if link.keyID == nil { return "Add your push key in Settings so your iPhone locks instantly." }
+        let lock = prefs.lockPhone ? "Locks while you focus" : "Locking is off"
+        guard let last = link.lastPhoneUpdate else { return lock }
+        return "\(lock) · updated \(Fmt.time(last))"
     }
 }
 
@@ -424,7 +470,7 @@ struct MindStrip: View {
                 mind.begin(.breathing, minutes: 1)
             }
             .help("1 minute physiological sigh")
-            stripButton(symbol: "iphone", tint: overLimit ? Theme.alert : Theme.digital, text: Fmt.short(day.socialSeconds)) {
+            stripButton(symbol: "iphone", tint: overLimit ? Theme.alert : Theme.digital, text: Fmt.short(day.allSocialSeconds)) {
                 nav.tab = .mind
             }
             .help("Social media today")
@@ -432,7 +478,7 @@ struct MindStrip: View {
     }
 
     private var overLimit: Bool {
-        prefs.socialLimit > 0 && day.socialSeconds > prefs.socialLimit * 60
+        prefs.socialLimit > 0 && day.allSocialSeconds > prefs.socialLimit * 60
     }
 
     private func stripButton(symbol: String, tint: Color, text: String, action: @escaping () -> Void) -> some View {

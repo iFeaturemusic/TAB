@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(MARKETING_VERSION)</string>
+    <key>CFBundleVersion</key>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
+    <key>CFBundlePackageType</key>
+    <string>XPC!</string>
+    <key>CFBundleDisplayName</key>
+    <string>TAB</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>TAB talks to TAB on your Mac over your Wi-Fi to share your phone time.</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_tabsync._tcp</string>
+    </array>
+    <key>TABPushTopic</key>
+    <string>$(APP_BUNDLE_ID)</string>
+    <key>TABTeamID</key>
+    <string>$(DEVELOPMENT_TEAM)</string>
+    <key>NSExtension</key>
+    <dict>
+        <key>NSExtensionPointIdentifier</key>
+        <string>com.apple.usernotifications.service</string>
+        <key>NSExtensionPrincipalClass</key>
+        <string>$(PRODUCT_MODULE_NAME).NotifyExtension</string>
+    </dict>
+</dict>
+</plist>

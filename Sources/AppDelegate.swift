@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let store = HistoryStore()
     private lazy var engine = Engine(prefs: prefs, store: store)
     private lazy var mind = Mind(prefs: prefs, store: store, engine: engine)
+    private lazy var link = PhoneLink(engine: engine, prefs: prefs, store: store)
     private var statusBar: StatusBarController?
     private var lockScreen: LockScreenController?
     private var banners: BannerController?
@@ -13,7 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         LoginItem.enableOnFirstLaunch()
 
-        let statusBar = StatusBarController(engine: engine, prefs: prefs, store: store, mind: mind)
+        let statusBar = StatusBarController(engine: engine, prefs: prefs, store: store, mind: mind, link: link)
         self.statusBar = statusBar
         lockScreen = LockScreenController(engine: engine, prefs: prefs, mind: mind)
         mindOverlay = MindOverlayController(mind: mind)
@@ -26,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         engine.start()
         mind.start()
+        link.start()
 
         if !UserDefaults.standard.bool(forKey: "welcomed") {
             UserDefaults.standard.set(true, forKey: "welcomed")
@@ -46,6 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "pause": engine.pause(minutes: Int(url.lastPathComponent) ?? 60)
             case "resume": engine.resume()
             case "end": mind.finish(completed: false)
+            case "pair": link.beginPairing()
             case "log":
                 let parts = url.pathComponents.filter { $0 != "/" }
                 let kind = parts.first.flatMap { name in MindKind.allCases.first { $0.rawValue == name || (name == "sigh" && $0 == .breathing) } } ?? prefs.mindKind
@@ -68,5 +71,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         mind.shutdown()
         engine.shutdown()
+        link.shutdown()
     }
 }

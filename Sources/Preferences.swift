@@ -39,6 +39,7 @@ final class Preferences: ObservableObject {
     @Published var socialSites: [String] { didSet { defaults.set(socialSites, forKey: "socialSites") } }
     @Published var scrollNudge: Bool { didSet { defaults.set(scrollNudge, forKey: "scrollNudge") } }
     @Published var silenceWhileFocus: Bool { didSet { defaults.set(silenceWhileFocus, forKey: "silenceWhileFocus") } }
+    @Published var lockPhone: Bool { didSet { defaults.set(lockPhone, forKey: "lockPhone") } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -87,6 +88,7 @@ final class Preferences: ObservableObject {
         socialSites = defaults.stringArray(forKey: "socialSites") ?? Distractions.defaultSites
         scrollNudge = bool("scrollNudge", true)
         silenceWhileFocus = bool("silenceWhileFocus", false)
+        lockPhone = bool("lockPhone", true)
     }
 
     var standMinutes: Int { customStand ? customStandMinutes : ageGroup.standEvery }

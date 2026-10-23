@@ -105,7 +105,7 @@ struct MetricPicker: View {
     var allowScore: Bool
 
     var body: some View {
-        let metrics = Metric.allCases.filter { allowScore || $0 != .score }
+        let metrics = Metric.allCases.filter { allowScore || ($0 != .score && $0 != .phone) }
         let split = (metrics.count + 1) / 2
         VStack(spacing: 4) {
             HStack(spacing: 4) {
@@ -238,6 +238,7 @@ struct TrendChart: View {
         case .moves: value = "\(Fmt.number(p.value)) stand-ups"
         case .mind: value = "\(Fmt.duration(Int(p.value * 60))) of rest"
         case .social: value = "\(Fmt.duration(Int(p.value * 60))) of social media"
+        case .phone: value = "\(Fmt.duration(Int(p.value * 3600))) on your iPhone"
         case .score: value = "score \(Int(p.value))"
         }
         return "\(when) · \(value)"

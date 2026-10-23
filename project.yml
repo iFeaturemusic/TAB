@@ -1,0 +1,153 @@
+name: TAB
+options:
+  bundleIdPrefix: com.ifeature
+  deploymentTarget:
+    macOS: "13.0"
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: RFCG56T72Z
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "2.2"
+    CURRENT_PROJECT_VERSION: "5"
+    APP_BUNDLE_ID: com.ifeature.TAB.mobile
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+
+targets:
+  TAB:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources
+      - path: Shared
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: TAB
+        PRODUCT_BUNDLE_IDENTIFIER: com.ifeature.TAB
+        INFOPLIST_FILE: Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        ENABLE_HARDENED_RUNTIME: YES
+        COMBINE_HIDPI_IMAGES: YES
+
+  TABPhone:
+    type: application
+    platform: iOS
+    sources:
+      - path: Phone/App
+      - path: Phone/Common
+      - path: Phone/Report/ReportContext.swift
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_NAME: TAB
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID)
+        INFOPLIST_FILE: Phone/App/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/App/TABPhone.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - target: TABMonitor
+      - target: TABShield
+      - target: TABShieldAction
+      - target: TABReport
+      - target: TABNotify
+
+  TABNotify:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Phone/Notify
+      - path: Phone/Common
+      - path: Shared/Link.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).notify
+        INFOPLIST_FILE: Phone/Notify/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/Extension.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+
+  TABMonitor:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Phone/Monitor
+      - path: Phone/Common
+      - path: Shared/Link.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).monitor
+        INFOPLIST_FILE: Phone/Monitor/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/Extension.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+
+  TABShield:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Phone/Shield
+      - path: Phone/Common
+      - path: Shared/Link.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).shield
+        INFOPLIST_FILE: Phone/Shield/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/Extension.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+
+  TABShieldAction:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Phone/ShieldAction
+      - path: Phone/Common
+      - path: Shared/Link.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).shieldaction
+        INFOPLIST_FILE: Phone/ShieldAction/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/Extension.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+
+  TABReport:
+    type: extensionkit-extension
+    platform: iOS
+    sources:
+      - path: Phone/Report
+      - path: Shared/Theme.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(APP_BUNDLE_ID).report
+        INFOPLIST_FILE: Phone/Report/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: Phone/Extension.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+
+schemes:
+  TAB:
+    build:
+      targets:
+        TAB: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  TABPhone:
+    build:
+      targets:
+        TABPhone: all
+    run:
+      config: Debug
+    archive:
+      config: Release

@@ -11,6 +11,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/macOS-13%2B-111?style=flat-square&logo=apple&logoColor=white" alt="macOS 13+">
+  <img src="https://img.shields.io/badge/iPhone-iOS%2017%2B-111?style=flat-square&logo=apple&logoColor=white" alt="iOS 17+">
   <img src="https://img.shields.io/badge/Swift-SwiftUI-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift">
   <img src="https://img.shields.io/badge/lives%20in-the%20menu%20bar-222?style=flat-square" alt="Menu bar app">
   <img src="https://img.shields.io/badge/data-stays%20on%20your%20Mac-7EE2B0?style=flat-square" alt="Private">
@@ -26,7 +27,9 @@ When you're deep in work, hours just disappear. You forget to drink, you forget 
 
 TAB is a little face that lives in your menu bar. It counts down to your next break, reminds you to drink water and to get up from your chair, guides you through a daily deep rest, and keeps an eye on how much time disappears into social media. Over weeks, months and years you can see whether your habits are getting healthier.
 
-No account. No cloud. No dock icon. Just a friendly face next to your clock.
+And when you're focusing, TAB on your iPhone locks the apps that pull you away, so the phone can't sneak in either.
+
+No account. No server. No dock icon. Just a friendly face next to your clock.
 
 ## Features
 
@@ -43,6 +46,7 @@ No account. No cloud. No dock icon. Just a friendly face next to your clock.
 | 🧠 **Smart tracking** | Notices when you walk away from the Mac and counts it as a break. Knows when you're watching a video or on a call and won't think you left. |
 | ⏸️ **Pause** | Pause reminders for 30 minutes, 1 hour, 2 hours or until tomorrow. |
 | 🚀 **Starts with your Mac** | Launches at login by default, so you never have to think about it. |
+| 📲 **iPhone companion** | While your Mac is in focus mode, your iPhone locks almost everything. Unlock your social apps for a few minutes when you need to post. Your phone time shows up in TAB on your Mac. |
 | ⚡ **Automations** | Start a break, a breathing reset or NSDR from Shortcuts, Raycast or a Stream Deck with `takeabreak://` links. |
 | 📁 **Your data** | Export everything as CSV whenever you like. Erase it with one click. |
 
@@ -166,6 +170,34 @@ We checked the science before building this, and kept only what holds up.
 | 📱 Social media | Limiting social media to about 10 minutes per platform (30 a day) for 3 weeks reduced loneliness and low mood. | [Hunt 2018](https://doi.org/10.1521/jscp.2018.37.10.751) |
 | 🔕 Notifications | Notifications made people more inattentive. Checking them in batches a few times a day improved focus and mood and lowered stress, more than switching them off completely. | [Kushlev 2016](https://doi.org/10.1145/2858036.2858359), [Fitz 2019](https://doi.org/10.1016/j.chb.2019.07.016) |
 
+## TAB for iPhone
+
+<p align="center">
+  <img src="docs/duo.webp" alt="TAB on the Mac and the iPhone" width="100%">
+</p>
+
+When a focus block starts on your Mac, your phone locks within a second or two. When you take a break, it opens again just as fast. Your Mac talks to your iPhone directly through Apple Push, so it works even when TAB on the phone is closed, and your phone time comes back to your Mac over your Wi-Fi. No iCloud, no server, no account. If your Mac goes to sleep in the middle of a block, the phone still unlocks on its own when the block would have ended.
+
+- **Locks almost everything** while you focus. You choose the apps that always stay open, like Messages, Maps or music. Calls always work. Prefer a lighter version? Switch to *Social apps only*.
+- **Posting passes.** Need to post a story? Tap **Post for 5 min** on the lock screen. Your social apps open for 5 minutes of use, then lock again by themselves. You get 3 passes a day, or as many as you set.
+- **Phone time on your Mac.** Total time on the iPhone and the time in each social app go to TAB on your Mac, into the Mind tab, Insights and your health score. Your social media limit counts Mac and iPhone together.
+- **Exact numbers on the phone.** The iPhone app shows today's screen time, pickups and top apps straight from Screen Time.
+
+<table>
+  <tr>
+    <td align="center"><b>Focus time</b></td>
+    <td align="center"><b>Locked app</b></td>
+    <td align="center"><b>Settings</b></td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/phone-locked.webp" alt="iPhone during focus time"></td>
+    <td valign="top"><img src="docs/phone-shield.webp" alt="A locked app with a posting pass"></td>
+    <td valign="top"><img src="docs/phone-settings.webp" alt="iPhone settings"></td>
+  </tr>
+</table>
+
+**Good to know.** Every lock and unlock arrives as a quiet notification (no sound, no banner), because that's the only way iOS lets an app react instantly. Apple's Screen Time rules keep app names private, so you give your social apps a name once on the iPhone and TAB on your Mac uses those names. Phone time reaches the Mac in 5 minute steps, whenever both are on the same Wi-Fi. iOS can't tell posting from scrolling, which is why a pass is a short timer.
+
 ## Your health over time
 
 Switch between **Day**, **Week**, **Month** and **Year**, flip back through older periods with the arrows and hover over any bar to see the exact number. Look at desk time, water, breaks, stand-ups, rest, social media or your score. TAB also writes a few notes for you, like how many days you hit your water goal or stayed under your social media limit.
@@ -274,16 +306,34 @@ cd TAB
 
 `./build.sh` builds a universal app (Apple silicon and Intel) into `build/TAB.app`. Adding `install` copies it to `/Applications` and starts it.
 
+### TAB for iPhone
+
+The iPhone app needs a paid Apple Developer account, because it uses Screen Time and push notifications.
+
+1. Put your team ID into `project.yml` (`DEVELOPMENT_TEAM`), install [XcodeGen](https://github.com/yonaskolb/XcodeGen) and sign in to your account in Xcode.
+2. Create a push key: in your developer account go to **Keys**, add a key with **Apple Push Notifications service (APNs)** (Sandbox & Production, Team Scoped) and download the `AuthKey_XXXXXXXXXX.p8` file. Keep it somewhere safe, Apple only lets you download it once.
+3. Build and install the iPhone app on your connected, unlocked iPhone:
+
+```bash
+./build.sh phone
+```
+
+4. On your Mac, open TAB › Settings › Digital hygiene, choose your push key under **Push key** and click **Pair**.
+5. On your iPhone, open TAB, allow Screen Time access, allow notifications, tap **Connect**, pick your apps and tap **Start locking with my Mac**.
+
+The push key stays in your Mac's keychain and never leaves it.
+
 ### Permissions
 
 TAB works without any special permissions. Two optional features ask macOS first:
 
 - **Lock Screen** can also pause the keyboard during a break. Allow TAB under **System Settings › Privacy & Security › Accessibility**. Without it, the lock screen still works, the keyboard just isn't paused.
 - **Counting social media websites** reads the address of the open browser tab. macOS asks you once per browser. Apps are counted without any permission.
+- **TAB for iPhone** asks for Screen Time access, notifications and your local network. Screen Time lets it lock apps and measure your phone time, notifications let your Mac lock it instantly, and the local network lets it send your phone time to your Mac.
 
 ## Privacy
 
-Everything stays on your Mac. TAB has no account, no analytics and never connects to the internet. It only remembers *how long* you spent in a social media app or on a site, never what you did there. Your history lives in a single file:
+Everything stays with you. TAB has no account, no analytics, no cloud and no server of its own. If you use the iPhone app, your Mac sends a tiny lock or unlock message through Apple Push, and your phone sends its numbers straight to your Mac over your own Wi-Fi. TAB only remembers *how long* you spent in an app or on a site, never what you did there. On the Mac, your history lives in a single file:
 
 ```
 ~/Library/Application Support/TAB/history.json
@@ -307,7 +357,18 @@ Sources/
   TodayView.swift       the Today tab
   InsightsView.swift    the Insights tab
   SettingsView.swift    the Settings tab
-Resources/              Info.plist and app icon
+  PhoneLink.swift        locks your iPhone through Apple Push, pairs over Wi-Fi
+Shared/                 design and the Mac to iPhone protocol
+Phone/
+  App/                  the iPhone app
+  Common/               locking, posting passes, phone time and the Mac link
+  Notify/               applies a lock or unlock the moment a push arrives
+  Monitor/              runs in the background and tracks screen time
+  Shield/               the TAB lock screen for blocked apps
+  ShieldAction/         the buttons on that lock screen
+  Report/               today's screen time inside the iPhone app
+Resources/              Info.plist, entitlements and app icon
+project.yml             Xcode project (XcodeGen)
 build.sh                build, sign and install
 ```
 

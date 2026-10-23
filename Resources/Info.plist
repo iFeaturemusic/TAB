@@ -13,9 +13,9 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.1</string>
+    <string>2.2</string>
     <key>CFBundleVersion</key>
-    <string>3</string>
+    <string>5</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>LSUIElement</key>
@@ -34,6 +34,12 @@
                 <string>takeabreak</string>
             </array>
         </dict>
+    </array>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>TAB talks to TAB on your iPhone over your Wi-Fi to lock it while you focus and to show your phone time.</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_tabsync._tcp</string>
     </array>
     <key>NSAppleEventsUsageDescription</key>
     <string>TAB checks which website is open in your browser so it can count your time on social media. Nothing leaves your Mac.</string>

@@ -6,6 +6,7 @@ struct SettingsView: View {
     @EnvironmentObject var engine: Engine
     @EnvironmentObject var store: HistoryStore
     @EnvironmentObject var mind: Mind
+    @EnvironmentObject var link: PhoneLink
     @State private var launchAtLogin = LoginItem.isEnabled
 
     var body: some View {
@@ -271,6 +272,34 @@ struct SettingsView: View {
                     }
                 }
                 Divider().overlay(Theme.stroke)
+                Row(title: "Lock my iPhone while I focus", subtitle: "Needs TAB on your iPhone") {
+                    PillToggle(isOn: $prefs.lockPhone, tint: Theme.digital)
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "iPhone", subtitle: phoneSubtitle) {
+                    Button(link.isPairing ? "Cancel" : (link.phones.isEmpty ? "Pair" : "Pair new")) {
+                        link.isPairing ? link.cancelPairing() : link.beginPairing()
+                    }
+                    .buttonStyle(PillButtonStyle(filled: link.phones.isEmpty && !link.isPairing, tint: Theme.digital, height: 26))
+                    .frame(width: 92)
+                }
+                if !link.phones.isEmpty {
+                    FlowLayout(spacing: 5) {
+                        ForEach(link.phones) { phone in
+                            RemovableChip(title: phone.name) { link.forget(phone) }
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 9)
+                }
+                Divider().overlay(Theme.stroke)
+                Row(title: "Push key", subtitle: link.keyID.map { "Key \($0) is saved in your keychain" }
+                    ?? "AuthKey file from your Apple developer account. Locks your iPhone instantly.") {
+                    Button("Choose…") { choosePushKey() }
+                        .buttonStyle(PillButtonStyle(filled: false, height: 26))
+                        .frame(width: 92)
+                }
+                Divider().overlay(Theme.stroke)
                 Row(title: "Notifications only in breaks", subtitle: "Do Not Disturb while you focus, via Shortcuts") {
                     PillToggle(isOn: $prefs.silenceWhileFocus, tint: Theme.digital)
                 }
@@ -282,6 +311,36 @@ struct SettingsView: View {
             }
             .card(padding: 4, radius: 16)
         }
+    }
+
+    private var phoneSubtitle: String {
+        if let until = link.pairingUntil, until > Date() {
+            return "Open TAB on your iPhone and tap Connect. Waiting \(Fmt.clock(Int(until.timeIntervalSinceNow)))"
+        }
+        if link.phones.isEmpty { return "Not paired yet. Both need to be on the same Wi-Fi." }
+        if let last = link.lastPhoneUpdate { return "Paired · last seen \(Fmt.time(last))" }
+        return "Paired"
+    }
+
+    private func choosePushKey() {
+        let panel = NSOpenPanel()
+        panel.title = "Choose your AuthKey file"
+        panel.allowedContentTypes = [UTType(filenameExtension: "p8") ?? .data]
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        PanelController.shared?.keepOpen = true
+        NSApp.activate(ignoringOtherApps: true)
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                try link.importKey(from: url)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "That key didn't work"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
+        }
+        PanelController.shared?.keepOpen = false
     }
 
     private var installedSocialApps: [String] {
