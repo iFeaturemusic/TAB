@@ -46,6 +46,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             case "pause": engine.pause(minutes: Int(url.lastPathComponent) ?? 60)
             case "resume": engine.resume()
             case "end": mind.finish(completed: false)
+            case "log":
+                let parts = url.pathComponents.filter { $0 != "/" }
+                let kind = parts.first.flatMap { name in MindKind.allCases.first { $0.rawValue == name || (name == "sigh" && $0 == .breathing) } } ?? prefs.mindKind
+                let minutes = parts.dropFirst().first.flatMap { Int($0) } ?? prefs.mindGoal
+                mind.log(kind, minutes: minutes)
             default: statusBar?.showPanel()
             }
         }

@@ -75,6 +75,7 @@ struct MindSession: Codable, Hashable {
     var start: Date
     var seconds: Int
     var kind: MindKind
+    var manual: Bool? = nil
 }
 
 struct DayLog: Codable, Identifiable {

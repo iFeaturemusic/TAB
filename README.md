@@ -116,9 +116,14 @@ NSDR (non-sleep deep rest) is a guided body scan you do lying down or leaning ba
 
 TAB reminds you once a day at a time you choose (2 pm by default, right in the after-lunch dip) and only if you haven't done it yet. Do it every day and you build a streak.
 
-<p align="center">
-  <img src="docs/banner-mind.png" alt="Daily reset reminder" width="50%">
-</p>
+Meditated on your own, in a class or with another app? Tap the **+** on the Daily reset card, pick what you did, how long and when it ended, and it counts for your goal, streak and score just like a session in TAB. Today's sessions are listed right below, so you can remove one if you made a mistake.
+
+<table>
+  <tr>
+    <td valign="top"><img src="docs/banner-mind.png" alt="Daily reset reminder"></td>
+    <td valign="top"><img src="docs/mind-log.png" alt="Log a session you did on your own"></td>
+  </tr>
+</table>
 
 <p align="center">
   <img src="docs/session-nsdr.webp" alt="NSDR session" width="49%">
@@ -246,6 +251,7 @@ TAB understands `takeabreak://` links, so you can trigger it from the Shortcuts 
 | `takeabreak://breathe` | 1 minute physiological sigh (`takeabreak://breathe/5` for 5 minutes) |
 | `takeabreak://nsdr` | Start your NSDR (`takeabreak://nsdr/20` for 20 minutes) |
 | `takeabreak://meditate` | Start a breath meditation |
+| `takeabreak://log/meditation/18` | Log a session you did on your own (`nsdr`, `meditation` or `sigh`, then minutes) |
 | `takeabreak://break` / `takeabreak://back` | Start or end a break |
 | `takeabreak://water` | Log a glass of water (`takeabreak://water/500` for 500 ml) |
 | `takeabreak://stand` | Log a stand-up |

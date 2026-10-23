@@ -65,6 +65,7 @@ struct RestCard: View {
     @EnvironmentObject var mind: Mind
     @EnvironmentObject var prefs: Preferences
     @EnvironmentObject var store: HistoryStore
+    @State private var logging = false
 
     var body: some View {
         let done = store.today.restSeconds
@@ -89,6 +90,19 @@ struct RestCard: View {
                         .foregroundColor(Theme.dim)
                 }
                 Spacer(minLength: 0)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { logging.toggle() }
+                } label: {
+                    Image(systemName: logging ? "xmark" : "plus")
+                }
+                .buttonStyle(IconButtonStyle(size: 28, tint: Theme.mind))
+                .help("Log a session you did without TAB")
+                .frame(maxHeight: .infinity, alignment: .top)
+            }
+            .fixedSize(horizontal: false, vertical: true)
+            if logging {
+                ManualLogForm { withAnimation(.easeInOut(duration: 0.2)) { logging = false } }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
             HStack(spacing: 4) {
                 Chip(title: "NSDR", selected: prefs.mindKind == .nsdr, tint: Theme.mind) { prefs.mindKind = .nsdr }
@@ -109,8 +123,119 @@ struct RestCard: View {
                 .font(.system(size: 11))
                 .foregroundColor(Theme.dim)
                 .fixedSize(horizontal: false, vertical: true)
+            if !store.today.mindSessions.isEmpty {
+                TodaySessions(sessions: store.today.mindSessions)
+            }
         }
         .card(padding: 12, radius: 18)
+    }
+}
+
+struct ManualLogForm: View {
+    @EnvironmentObject var mind: Mind
+    @EnvironmentObject var prefs: Preferences
+    var onDone: () -> Void
+
+    @State private var kind: MindKind?
+    @State private var minutes: Int?
+    @State private var endedAgo = 0
+
+    var body: some View {
+        let kind = self.kind ?? prefs.mindKind
+        let minutes = self.minutes ?? prefs.mindGoal
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Log a session you did on your own")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white)
+            HStack(spacing: 4) {
+                ForEach(MindKind.allCases) { k in
+                    Chip(title: k == .breathing ? "Sigh" : k.title, selected: kind == k, tint: Theme.mind) { self.kind = k }
+                }
+            }
+            HStack {
+                Text("Length")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                Spacer()
+                ValueStepper(value: Binding(get: { minutes }, set: { self.minutes = $0 }), range: 1...120) { "\($0) min" }
+            }
+            HStack(spacing: 4) {
+                ForEach([5, 10, 15, 20, 30], id: \.self) { m in
+                    Chip(title: "\(m)", selected: minutes == m, tint: Theme.mind) { self.minutes = m }
+                }
+            }
+            HStack {
+                Text("Ended")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white)
+                Spacer()
+                ValueStepper(value: $endedAgo, range: 0...maxAgo(length: minutes), step: 15) {
+                    $0 == 0 ? "just now" : "\(Fmt.duration($0 * 60)) ago"
+                }
+            }
+            HStack(spacing: 6) {
+                Button("Save") {
+                    mind.log(kind, minutes: minutes, endedMinutesAgo: min(endedAgo, maxAgo(length: minutes)))
+                    onDone()
+                }
+                .buttonStyle(PillButtonStyle(filled: true, tint: Theme.mind, height: 30))
+                Button("Cancel", action: onDone)
+                    .buttonStyle(PillButtonStyle(filled: false, height: 30))
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.mind.opacity(0.08)))
+    }
+
+    private func maxAgo(length: Int) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        let sinceMidnight = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+        let room = max(0, sinceMidnight - length)
+        return min(12 * 60, room / 15 * 15)
+    }
+}
+
+struct TodaySessions: View {
+    @EnvironmentObject var mind: Mind
+    var sessions: [MindSession]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Divider().overlay(Theme.stroke)
+            Text("Today")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundColor(Theme.faint)
+            ForEach(Array(sessions.suffix(5).reversed().enumerated()), id: \.offset) { _, session in
+                HStack(spacing: 8) {
+                    Image(systemName: session.kind.symbol)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(session.kind == .breathing ? Theme.breath : Theme.mind)
+                        .frame(width: 16)
+                    Text(Fmt.time(session.start))
+                        .font(.system(size: 11, weight: .medium))
+                        .monospacedDigit()
+                        .foregroundColor(Theme.dim)
+                    Text(session.kind == .breathing ? "Sigh" : session.kind.title)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(Fmt.duration(session.seconds))
+                        .font(.system(size: 11))
+                        .foregroundColor(Theme.dim)
+                    if session.manual == true {
+                        Text("added")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(Theme.mind)
+                            .padding(.horizontal, 5)
+                            .frame(height: 14)
+                            .background(Capsule().fill(Theme.mind.opacity(0.12)))
+                    }
+                    Spacer(minLength: 0)
+                    Button { mind.remove(session) } label: { Image(systemName: "xmark") }
+                        .buttonStyle(IconButtonStyle(size: 18, tint: Theme.dim))
+                        .help("Remove")
+                }
+            }
+        }
     }
 }
 

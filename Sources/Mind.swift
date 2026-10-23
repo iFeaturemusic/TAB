@@ -406,6 +406,29 @@ final class Mind: ObservableObject {
         summary = nil
     }
 
+    func log(_ kind: MindKind, minutes: Int, endedMinutesAgo: Int = 0) {
+        let seconds = max(1, minutes) * 60
+        let end = Date().addingTimeInterval(-Double(max(0, endedMinutesAgo) * 60))
+        let start = end.addingTimeInterval(-Double(seconds))
+        let goal = prefs.scoredMindGoal
+        let limit = prefs.scoredSocialLimit
+        store.update(start) { day in
+            day.mindSessions.append(MindSession(start: start, seconds: seconds, kind: kind, manual: true))
+            day.mindSessions.sort { $0.start < $1.start }
+            day.mindGoal = goal
+            day.socialLimit = limit
+        }
+        if engine.nudge == .mindPractice && store.today.restSeconds >= prefs.mindGoal * 60 {
+            engine.clearNudge()
+        }
+    }
+
+    func remove(_ session: MindSession) {
+        store.update(session.start) { day in
+            if let index = day.mindSessions.firstIndex(of: session) { day.mindSessions.remove(at: index) }
+        }
+    }
+
     func skipToday() {
         skippedDay = HistoryStore.key(Date())
         engine.clearNudge()
